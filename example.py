@@ -2,11 +2,17 @@ from machine import Pin
 from KS0108 import ks0108
 import random
 import time
+import framebuf
 
 data = [Pin(0), Pin(1), Pin(2), Pin(3), Pin(4), Pin(5), Pin(6), Pin(7)]
 
-lcd = ks0108(128, 64, Pin(12, Pin.OUT), [Pin(10), Pin(11)], Pin(9), Pin(8), Pin(13), data)
-lcd.init_display()
+width = 128
+height = 64
+buffer = bytearray(width * (height // 8))
+lcd = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_VLSB)
+
+driver = ks0108(buffer, width, height, Pin(12, Pin.OUT), [Pin(10), Pin(11)], Pin(9), Pin(8), Pin(13), data)
+driver.init()
 print("LCD Init")
 
 while True:
@@ -14,5 +20,5 @@ while True:
     y = random.randint(0, 55)
     lcd.fill(0)
     lcd.text("Bonjour", x, y)
-    lcd.write_framebuffer()
+    driver.refresh()
     time.sleep(2)
